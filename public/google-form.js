@@ -4,6 +4,7 @@ const dialog=document.querySelector('#consult-dialog');
 const menu=document.querySelector('.menu-toggle');
 const nav=document.querySelector('.mobile-nav');
 let lastFocus;
+dialog.querySelector('iframe').addEventListener('load',()=>{dialog.scrollTop=0;});
 function closeMenu(){nav.classList.remove('open');menu.setAttribute('aria-expanded','false');menu.setAttribute('aria-label','Открыть меню');menu.textContent='☰';}
 menu.addEventListener('click',()=>{const open=!nav.classList.contains('open');nav.classList.toggle('open',open);menu.setAttribute('aria-expanded',String(open));menu.setAttribute('aria-label',open?'Закрыть меню':'Открыть меню');menu.textContent=open?'×':'☰';});
 nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeMenu));

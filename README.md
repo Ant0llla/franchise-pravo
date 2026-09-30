@@ -32,3 +32,9 @@ npm test
 ```
 
 Тесты используют временное хранилище, проверяют сохранение и повтор запроса, отказ при отсутствии согласия, некорректные данные, чужой Origin, недоступность приватных файлов и маршруты.
+
+## GitHub Pages test intake
+
+The published build now uses `google-form.js` and an embedded Google Form. Google Forms displays its own receipt and writes responses to its linked private spreadsheet. This is a test flow for review with a salesperson; use fictitious data. No lawyer notification is configured. The original local Node preview still stores test requests locally. `build-pages.py` replaces the local form and its data-handling copy for the published version.
+
+Verified on 2026-09-30: one fictitious request submitted through the published site appeared in the linked sheet. Google Form editing and sheet access remain under the signed-in Google owner's account. No credentials are included in this repository.
