@@ -1,3 +1,5 @@
+import {initCaseAnimation} from './cases.js';
+initCaseAnimation();
 const dialog=document.querySelector('#consult-dialog');
 const form=document.querySelector('#consult-form');
 const menu=document.querySelector('.menu-toggle');
