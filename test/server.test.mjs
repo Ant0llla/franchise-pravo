@@ -1,0 +1,16 @@
+import {test,before,after} from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,readFile,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+const dir=await mkdtemp(join(tmpdir(),'fp-test-'));process.env.DATA_DIR=dir;
+const{server,validateLead}=await import('../server.mjs');let base;
+before(async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));base=`http://127.0.0.1:${server.address().port}`;});
+after(async()=>{await new Promise(r=>server.close(r));await rm(dir,{recursive:true,force:true});});
+const lead={scenario:'entry',name:'Тест',contact:'test@example.com',message:'Тестовая заявка',consent:true,requestId:'12345678-abcd-1234-abcd-123456789012'};
+const post=(data,origin=base)=>fetch(base+'/api/leads',{method:'POST',headers:{'Content-Type':'application/json',Origin:origin},body:JSON.stringify(data)});
+test('persists exactly one record for a retried request',async()=>{const a=await post(lead);assert.equal(a.status,201);const id=(await a.json()).id;const b=await post(lead);assert.equal((await b.json()).id,id);const records=(await readFile(join(dir,'leads.jsonl'),'utf8')).trim().split('\n');assert.equal(records.length,1);assert.equal(JSON.parse(records[0]).contact,lead.contact);});
+test('rejects absent consent and malformed contacts',async()=>{assert.match(validateLead({...lead,contact:'hi'}),/Укажите/);assert.equal((await post({...lead,consent:false})).status,422);});
+test('rejects external origins and malformed bodies',async()=>{assert.equal((await post(lead,'https://evil.example')).status,403);const r=await fetch(base+'/api/leads',{method:'POST',headers:{Origin:base,'Content-Type':'application/json'},body:'{'});assert.equal(r.status,400);});
+test('never exposes locally stored leads',async()=>{assert.equal((await fetch(base+'/.data/leads.jsonl')).status,404);assert.equal((await fetch(base+'/missing/')).status,404);});
+test('all eight pages and checklists resolve',async()=>{for(const p of ['/','/entry/','/working/','/exit/','/checklist/','/exit-checklist/','/privacy/','/terms/','/downloads/checklist.txt'])assert.equal((await fetch(base+p)).status,200,p);});
